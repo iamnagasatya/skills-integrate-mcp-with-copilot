@@ -1,4 +1,9 @@
+import os
+import sys
 import pytest
+# Ensure project root is on PYTHONPATH for imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from fastapi.testclient import TestClient
 from src.app import app
 
@@ -16,7 +21,7 @@ def test_signup_success():
     assert resp.status_code == 200
     assert "Signed up test@example.com" in resp.json()["message"]
     # cleanup
-    client.delete("/activities/Chess Club/unregister", json={"email": "test@example.com"})
+    client.request("DELETE", "/activities/Chess Club/unregister", json={"email": "test@example.com"})
 
 
 def test_signup_invalid_email():
@@ -31,11 +36,11 @@ def test_signup_duplicate():
 
 
 def test_unregister_not_signed_up():
-    resp = client.delete("/activities/Chess Club/unregister", json={"email": "noone@example.com"})
+    resp = client.request("DELETE", "/activities/Chess Club/unregister", json={"email": "noone@example.com"})
     assert resp.status_code == 400
 
 
 def test_unregister_success():
     client.post("/activities/Chess Club/signup", json={"email": "temp@example.com"})
-    resp = client.delete("/activities/Chess Club/unregister", json={"email": "temp@example.com"})
+    resp = client.request("DELETE", "/activities/Chess Club/unregister", json={"email": "temp@example.com"})
     assert resp.status_code == 200
